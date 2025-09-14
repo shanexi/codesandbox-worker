@@ -2,6 +2,7 @@
   "name": "hono",
   "type": "module",
   "dependencies": {
+    "@codesandbox/sdk": "^2.2.0",
     "hono": "^4.9.7"
   },
   "devDependencies": {

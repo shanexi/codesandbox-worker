@@ -1,14 +1,17 @@
-import { Hono } from 'hono'
+import { Hono } from "hono";
+import { CodeSandbox } from "@codesandbox/sdk";
 
-const app = new Hono()
+const app = new Hono();
 
-const welcomeStrings = [
-  'Hello Hono!',
-  'To learn more about Hono on Vercel, visit https://vercel.com/docs/frameworks/backend/hono'
-]
+app.get("/", async (c) => {
+  const sdk = new CodeSandbox(process.env.CSB_API_KEY);
+  const sandbox = await sdk.sandboxes.create();
+  const client = await sandbox.connect();
 
-app.get('/', (c) => {
-  return c.text(welcomeStrings.join('\n\n'))
-})
+  const output = await client.commands.run("echo 'Hello World'");
 
-export default app
+  console.log(output); // Hello World
+  return c.text(output);
+});
+
+export default app;
