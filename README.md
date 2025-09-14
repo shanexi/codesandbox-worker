@@ -1,28 +1,26 @@
-Prerequisites:
+## 研究目标
 
-- [Vercel CLI](https://vercel.com/docs/cli) installed globally
+研究如何使用 codesandbox sdk
 
-To develop locally:
+## 模板
 
-```
-npm install
-vc dev
-```
+使用了 [hono + vercel](https://hono.dev/docs/getting-started/vercel)
 
-```
-open http://localhost:3000
-```
+发现 `vercel dev` 是运行的 vercel function
 
-To build locally:
+接入了 honeycomb
+发现走 vercel function 能 battery-included 在 honeycomb 看到 trace
+> 尝试用 `@hono/node-server` 不能在 honeycomb 看到 trace
 
-```
-npm install
-vc build
-```
+## 其他研究目标
 
-To deploy:
+学习 effect observibility `docs/tracing-layer-usage.md`.
 
-```
-npm install
-vc deploy
-```
+因为是渐进式 adopt effect hono。所有是在业务逻辑级别。
+
+> adopt effect 另一个目的是 typed error。
+
+
+
+
+
