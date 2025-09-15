@@ -182,8 +182,8 @@ export const businessLogic = (userId: string) =>
           yield* Effect.logError(
             `Database error: ${error.operation} - ${error.details}`
           );
-          // Convert to die for critical errors
-          return yield* Effect.die(error);
+          // Re-throw to keep it as recoverable error
+          return yield* Effect.fail(error);
         }),
     })
   );
