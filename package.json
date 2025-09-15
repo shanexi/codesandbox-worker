@@ -2,7 +2,8 @@
   "name": "hono",
   "type": "module",
   "scripts": {
-    "start": "vercel dev"
+    "start": "vercel dev",
+    "test": "vitest"
   },
   "dependencies": {
     "@codesandbox/sdk": "^2.2.0",
@@ -16,9 +17,11 @@
   },
   "devDependencies": {
     "@types/node": "^22.8.5",
+    "@vitest/ui": "^3.2.4",
     "tsx": "^4.7.1",
     "typescript": "^5.8.3",
-    "vercel": "^48.0.0"
+    "vercel": "^48.0.0",
+    "vitest": "^3.2.4"
   },
   "overrides": {
     "@vercel/node": {

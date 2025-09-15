@@ -2,7 +2,12 @@ import { Hono } from "hono";
 import { CodeSandbox } from "@codesandbox/sdk";
 import { Effect } from "effect";
 import { TracingLive } from "./TracingLive.js";
-import { businessLogic } from "./tracing-example.js";
+import {
+  businessLogic,
+  UserNotFound,
+  ValidationError,
+  DatabaseError,
+} from "./tracing-example.js";
 
 const app = new Hono();
 
@@ -17,28 +22,79 @@ app.get("/", async (c) => {
   return c.text(output);
 });
 
-// Test endpoint with tracing
+// Test endpoint with tracing and proper error handling
 app.get("/test/:userId?", async (c) => {
   const userId = c.req.param("userId") || "123";
 
-  try {
-    const result = await Effect.runPromise(
-      businessLogic(userId).pipe(Effect.provide(TracingLive))
-    );
+  const result = await Effect.runPromise(
+    businessLogic(userId).pipe(
+      Effect.provide(TracingLive),
+      Effect.either // Convert to Either to handle both success and error
+    )
+  );
 
+  if (result._tag === "Right") {
     return c.json({
       success: true,
-      data: result,
+      data: result.right,
     });
-  } catch (error) {
+  }
+
+  // Handle specific error types
+  const error = result.left;
+
+  if (error instanceof ValidationError) {
     return c.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: {
+          type: "ValidationError",
+          field: error.field,
+          message: error.message,
+        },
+      },
+      400
+    );
+  }
+
+  if (error instanceof UserNotFound) {
+    return c.json(
+      {
+        success: false,
+        error: {
+          type: "UserNotFound",
+          message: error.message,
+        },
+      },
+      404
+    );
+  }
+
+  if (error instanceof DatabaseError) {
+    return c.json(
+      {
+        success: false,
+        error: {
+          type: "DatabaseError",
+          operation: error.operation,
+          details: error.details,
+        },
       },
       500
     );
   }
+
+  // Unknown error
+  return c.json(
+    {
+      success: false,
+      error: {
+        type: "UnknownError",
+        message: error instanceof Error ? error.message : "Unknown error",
+      },
+    },
+    500
+  );
 });
 
 export default app;
