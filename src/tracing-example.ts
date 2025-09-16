@@ -1,4 +1,4 @@
-import { Effect, Data, Option } from "effect";
+import { Effect, Data } from "effect";
 
 // Define custom error classes using Data.TaggedError
 export class UserNotFound extends Data.TaggedError("UserNotFound")<{
@@ -37,15 +37,15 @@ const userRepository = {
       }
 
       if (userId === "404") {
-        return Option.none();
+        return null; // 让上层决定如何处理
       }
 
-      return Option.some({
+      return {
         id: userId,
         name: "John Doe",
         email: "john@example.com",
         createdAt: new Date().toISOString(),
-      });
+      };
     }).pipe(
       Effect.withSpan("db.query", {
         attributes: {
@@ -75,11 +75,12 @@ const fetchUserData = (userId: string) =>
     // Query database
     const result = yield* userRepository.findById(userId);
 
-    // Handle Option -> Error conversion
-    return yield* Option.match(result, {
-      onNone: () => Effect.fail(new UserNotFound({ userId })),
-      onSome: Effect.succeed,
-    });
+    // Handle null result - let business layer decide
+    if (result === null) {
+      return yield* Effect.fail(new UserNotFound({ userId }));
+    }
+
+    return result;
   }).pipe(
     Effect.withSpan("user.fetch", {
       attributes: { userId },
