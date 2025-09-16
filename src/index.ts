@@ -24,6 +24,12 @@ app.get("/test/:userId?", async (c) => {
   return await Effect.runPromise(
     businessLogic(userId).pipe(
       Effect.provide(TracingLive),
+      Effect.map((data) =>
+        c.json({
+          success: true,
+          data,
+        })
+      ),
       Effect.catchTags({
         ValidationError: (error) =>
           Effect.succeed(
@@ -52,40 +58,22 @@ app.get("/test/:userId?", async (c) => {
               404
             )
           ),
-        DatabaseError: (error) =>
-          Effect.succeed(
-            c.json(
-              {
-                success: false,
-                error: {
-                  type: error._tag,
-                  operation: error.operation,
-                  details: error.details,
-                },
-              },
-              500
-            )
-          ),
-        // ConfigError: (error) =>
+        // DatabaseError: (error) =>
         //   Effect.succeed(
         //     c.json(
         //       {
         //         success: false,
         //         error: {
         //           type: error._tag,
-        //           message: "Configuration error - check environment variables",
+        //           operation: error.operation,
+        //           details: error.details,
         //         },
         //       },
         //       500
         //     )
         //   ),
-      }),
-      Effect.map((data) =>
-        c.json({
-          success: true,
-          data,
-        })
-      )
+        
+      })
     )
   );
 });
